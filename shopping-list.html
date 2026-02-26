@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쇼핑 리스트</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px;
+    }
+
+    .app {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      width: 100%;
+      max-width: 480px;
+      padding: 32px 28px 28px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #a0aec0;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #2d3748;
+    }
+
+    .input-row input:focus {
+      border-color: #667eea;
+    }
+
+    .input-row input::placeholder {
+      color: #cbd5e0;
+    }
+
+    .btn-add {
+      padding: 10px 18px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-add:hover {
+      background: #5a67d8;
+    }
+
+    .btn-add:active {
+      transform: scale(0.97);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stats-text {
+      font-size: 0.82rem;
+      color: #718096;
+    }
+
+    .btn-clear-done {
+      font-size: 0.8rem;
+      color: #e53e3e;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .btn-clear-done:hover {
+      background: #fff5f5;
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f7fafc;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      transition: opacity 0.2s, background 0.2s;
+      animation: slideIn 0.18s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    li.done {
+      opacity: 0.55;
+      background: #edf2f7;
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #cbd5e0;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .checkbox.checked {
+      background: #667eea;
+      border-color: #667eea;
+    }
+
+    .checkbox.checked::after {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 9px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+    }
+
+    .item-text {
+      flex: 1;
+      font-size: 0.95rem;
+      color: #2d3748;
+      word-break: break-all;
+      transition: text-decoration 0.2s;
+    }
+
+    li.done .item-text {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #cbd5e0;
+      font-size: 1.1rem;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+
+    .btn-delete:hover {
+      color: #e53e3e;
+      background: #fff5f5;
+    }
+
+    .empty {
+      text-align: center;
+      color: #cbd5e0;
+      font-size: 0.9rem;
+      padding: 32px 0;
+    }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>쇼핑 리스트</h1>
+    <p class="subtitle" id="subtitle">오늘 사야 할 것들을 추가해 보세요.</p>
+
+    <div class="input-row">
+      <input type="text" id="itemInput" placeholder="아이템 입력..." maxlength="80">
+      <button class="btn-add" id="addBtn">추가</button>
+    </div>
+
+    <div class="stats">
+      <span class="stats-text" id="statsText"></span>
+      <button class="btn-clear-done" id="clearDoneBtn" style="display:none">완료 항목 삭제</button>
+    </div>
+
+    <ul id="list"></ul>
+    <div class="empty" id="empty">
+      <div class="empty-icon">🛒</div>
+      <div>아직 아이템이 없어요</div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('itemInput');
+    const addBtn = document.getElementById('addBtn');
+    const list = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    const statsText = document.getElementById('statsText');
+    const clearDoneBtn = document.getElementById('clearDoneBtn');
+
+    let items = JSON.parse(localStorage.getItem('shoppingList') || '[]');
+
+    function save() {
+      localStorage.setItem('shoppingList', JSON.stringify(items));
+    }
+
+    function render() {
+      list.innerHTML = '';
+
+      const total = items.length;
+      const doneCount = items.filter(i => i.done).length;
+
+      if (total === 0) {
+        empty.style.display = 'block';
+        statsText.textContent = '';
+        clearDoneBtn.style.display = 'none';
+      } else {
+        empty.style.display = 'none';
+        statsText.textContent = `${doneCount} / ${total} 완료`;
+        clearDoneBtn.style.display = doneCount > 0 ? 'inline' : 'none';
+      }
+
+      items.forEach((item, index) => {
+        const li = document.createElement('li');
+        if (item.done) li.classList.add('done');
+
+        const checkbox = document.createElement('div');
+        checkbox.className = 'checkbox' + (item.done ? ' checked' : '');
+        checkbox.addEventListener('click', () => toggleItem(index));
+
+        const span = document.createElement('span');
+        span.className = 'item-text';
+        span.textContent = item.text;
+        span.addEventListener('click', () => toggleItem(index));
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.innerHTML = '&#x2715;';
+        delBtn.title = '삭제';
+        delBtn.addEventListener('click', () => deleteItem(index));
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        list.appendChild(li);
+      });
+    }
+
+    function addItem() {
+      const text = input.value.trim();
+      if (!text) {
+        input.focus();
+        return;
+      }
+      items.unshift({ text, done: false });
+      save();
+      render();
+      input.value = '';
+      input.focus();
+    }
+
+    function toggleItem(index) {
+      items[index].done = !items[index].done;
+      save();
+      render();
+    }
+
+    function deleteItem(index) {
+      items.splice(index, 1);
+      save();
+      render();
+    }
+
+    addBtn.addEventListener('click', addItem);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') addItem();
+    });
+    clearDoneBtn.addEventListener('click', () => {
+      items = items.filter(i => !i.done);
+      save();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
